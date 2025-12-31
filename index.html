@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insta Studio | AI Viral Reel Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --insta-purple: #833ab4;
+            --insta-pink: #fd1d1d;
+            --insta-orange: #fcb045;
+            --insta-magenta: #e1306c;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #050507;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Animated Mesh Gradient Background */
+        .mesh-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(at 0% 0%, rgba(131, 58, 180, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(225, 48, 108, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(252, 176, 69, 0.1) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(253, 29, 29, 0.1) 0px, transparent 50%);
+        }
+
+        /* Noise Texture Overlay */
+        .noise::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://grainy-gradients.vercel.app/noise.svg');
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .glass-input:focus {
+            outline: none;
+            border-color: var(--insta-magenta);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-hover:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 30px rgba(225, 48, 108, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .insta-gradient-text {
+            background: linear-gradient(45deg, var(--insta-orange), var(--insta-magenta), var(--insta-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .insta-btn {
+            background: linear-gradient(45deg, var(--insta-magenta), var(--insta-purple));
+            transition: all 0.3s ease;
+        }
+
+        .insta-btn:hover {
+            box-shadow: 0 0 25px rgba(225, 48, 108, 0.5);
+            transform: scale(1.02);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .glow-border {
+            position: relative;
+        }
+        
+        .glow-border::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(45deg, var(--insta-orange), var(--insta-magenta), var(--insta-purple));
+            z-index: -1;
+            border-radius: inherit;
+            opacity: 0.3;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+
+        @keyframes kenburns {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.15) translate(-1%, -1%); }
+        }
+
+        .ken-burns {
+            animation: kenburns 10s ease-out forwards;
+        }
+
+        .reel-aspect {
+            aspect-ratio: 9 / 16;
+        }
+
+        .step-active {
+            color: white !important;
+            border-bottom: 2px solid var(--insta-magenta);
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .animate-spin-fast { animation: spin 0.6s linear infinite; }
+        
+        #player-img {
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .active-scene-card {
+            background: rgba(225, 48, 108, 0.1) !important;
+            border-color: rgba(225, 48, 108, 0.3) !important;
+            transform: translateX(4px);
+        }
+
+        .recording-pulse {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Page Transitions */
+        #landing-page, #app-page {
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body class="noise overflow-y-auto">
+    <div class="mesh-gradient"></div>
+
+    <!-- START: MODAL SYSTEM -->
+    <div id="info-modal" class="modal-overlay">
+        <div class="glass max-w-2xl w-full max-h-[80vh] rounded-[2.5rem] p-8 sm:p-12 relative overflow-y-auto sidebar-scroll">
+            <button onclick="closeModal()" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <div id="modal-content">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+    </div>
+    <!-- END: MODAL SYSTEM -->
+
+    <!-- START: LANDING PAGE -->
+    <div id="landing-page">
+        <!-- Navigation -->
+        <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center glass">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 insta-btn rounded-xl flex items-center justify-center shadow-lg shadow-magenta-500/20">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M10 15l4-3-4-3v6z" fill="white"></path></svg>
+                </div>
+                <span class="text-xl font-bold tracking-tight">Insta<span class="insta-gradient-text">Studio</span></span>
+            </div>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-gray-400">
+                <a href="#features" class="hover:text-white transition-colors">Features</a>
+                <a href="#how-it-works" class="hover:text-white transition-colors">How It Works</a>
+                <button onclick="showInfo('privacy')" class="hover:text-white transition-colors">Privacy</button>
+            </div>
+            <button onclick="window.location.href='signup.html'" class="px-6 py-2 text-sm font-semibold border border-white/20 rounded-full hover:bg-white/10 transition-all">
+                Launch App
+            </button>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="pt-32 pb-20 px-6 max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+            <div class="reveal">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-gray-300 mb-6">
+                    <span class="w-2 h-2 rounded-full bg-magenta-500 animate-pulse" style="background-color: var(--insta-magenta);"></span>
+                    New: Gemini 2.0 Integration
+                </div>
+                <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold leading-tight mb-6">
+                    Create Viral Instagram Reels <br/>
+                    <span class="insta-gradient-text">with AI</span>
+                </h1>
+                <p class="text-lg text-gray-400 mb-10 max-w-lg leading-relaxed">
+                    Turn ideas into high-retention reels in seconds. No backend required. Bring your own AI key and maintain 100% privacy.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button onclick="window.location.href='signup.html'" class="insta-btn px-8 py-4 rounded-full font-bold text-lg text-white">
+                        Start Creating Free
+                    </button>
+                    <a href="#how-it-works" class="px-8 py-4 rounded-full font-bold text-lg glass border border-white/10 hover:bg-white/5 transition-all text-center">
+                        How It Works
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hero Mockup -->
+            <div class="relative reveal delay-200">
+                <div class="absolute -top-10 -right-10 floating z-10 hidden sm:block" style="animation-delay: 1s;">
+                    <div class="glass p-4 rounded-2xl shadow-2xl flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center text-pink-500">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-[10px] text-gray-400 uppercase">Viral Score</div>
+                            <div class="font-bold text-white text-sm">98% Retention</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass rounded-3xl p-4 sm:p-6 glow-border shadow-2xl relative">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+                        </div>
+                        <div class="text-[10px] text-gray-500 font-mono">reel_generator.ai</div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-white/5 rounded-xl border border-white/10">
+                            <div class="text-[10px] text-pink-500 uppercase font-bold tracking-widest mb-1">Viral Hook</div>
+                            <div class="text-sm text-gray-200 leading-relaxed italic">"Stop scrolling! This 3-second hack will change how you design forever..."</div>
+                        </div>
+                        <div class="p-4 bg-white/5 rounded-xl border border-white/10">
+                            <div class="text-[10px] text-purple-500 uppercase font-bold tracking-widest mb-1">Visual Script</div>
+                            <div class="text-sm text-gray-200 space-y-2">
+                                <p><span class="text-gray-500">[0:00]</span> Fast zoom on workspace</p>
+                                <p><span class="text-gray-500">[0:02]</span> Screen recording of the studio</p>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-white/5 rounded-xl border border-white/10 relative">
+                            <div class="text-[10px] text-orange-500 uppercase font-bold tracking-widest mb-1">Captions</div>
+                            <div class="text-xs text-gray-400">Everything you need is in the comments! ⚡️ #designtok</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Grid -->
+        <section id="features" class="py-20 px-6 max-w-7xl mx-auto">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">Everything You Need to <span class="insta-gradient-text">Go Viral</span></h2>
+                <p class="text-gray-400">Powerful AI tools built specifically for the Instagram algorithm.</p>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass p-8 rounded-3xl glass-hover transition-all reveal">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center text-purple-400 mb-6">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">AI Reel Scripts</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Detailed scene-by-scene scripts optimized for audience retention.</p>
+                </div>
+                <div class="glass p-8 rounded-3xl glass-hover transition-all reveal">
+                    <div class="w-12 h-12 rounded-2xl bg-pink-500/20 flex items-center justify-center text-pink-400 mb-6">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Viral Hooks</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Stop the scroll with 5 unique high-converting hooks generated instantly.</p>
+                </div>
+                <div class="glass p-8 rounded-3xl glass-hover transition-all reveal">
+                    <div class="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center text-orange-400 mb-6">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Auto Visuals</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Unique high-fidelity AI visuals generated for every single scene.</p>
+                </div>
+                <div class="glass p-8 rounded-3xl glass-hover transition-all reveal">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 mb-6">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="10" y1="3" x2="8" y2="21"></line></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Voice Master</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Human-like AI narration synced perfectly with your visual storyboard.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section id="how-it-works" class="py-20 px-6 bg-white/5 border-y border-white/5">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="text-3xl md:text-5xl font-bold mb-4">Go Viral in <span class="insta-gradient-text">3 Simple Steps</span></h2>
+                </div>
+                <div class="grid md:grid-cols-3 gap-12 text-center">
+                    <div class="reveal">
+                        <div class="w-16 h-16 rounded-full glass border border-white/20 flex items-center justify-center text-2xl font-bold mx-auto mb-6">1</div>
+                        <h4 class="text-xl font-bold mb-3">Enter Your Idea</h4>
+                        <p class="text-gray-400 text-sm">"3 ways to style a blazer" or "My morning routine as a developer".</p>
+                    </div>
+                    <div class="reveal">
+                        <div class="w-16 h-16 rounded-full glass border border-white/20 flex items-center justify-center text-2xl font-bold mx-auto mb-6">2</div>
+                        <h4 class="text-xl font-bold mb-3">Add Gemini Key</h4>
+                        <p class="text-gray-400 text-sm">Get your free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-magenta-400 underline font-bold">Google AI Studio</a> to power the engine.</p>
+                    </div>
+                    <div class="reveal">
+                        <div class="w-16 h-16 rounded-full glass border border-white/20 flex items-center justify-center text-2xl font-bold mx-auto mb-6">3</div>
+                        <h4 class="text-xl font-bold mb-3">Export & Post</h4>
+                        <p class="text-gray-400 text-sm">Download your finished reel with perfect timing, narration, and AI visuals.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Privacy Section -->
+        <section id="privacy" class="py-32 px-6 max-w-4xl mx-auto text-center reveal">
+            <div class="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 mx-auto mb-8 border border-green-500/20">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <h2 class="text-3xl md:text-5xl font-bold mb-6">Your Data is <span class="insta-gradient-text">Always Yours</span></h2>
+            <p class="text-xl text-gray-400 leading-relaxed mb-10">
+                Insta Studio is powered by your own API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-white underline">Google AI Studio</a>. This ensures your data and creativity never touch our servers.
+            </p>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-20 px-6 border-t border-white/5 glass">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 insta-btn rounded-xl flex items-center justify-center shadow-lg shadow-magenta-500/20">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M10 15l4-3-4-3v6z" fill="white"></path></svg>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight">Insta<span class="insta-gradient-text">Studio</span></span>
+                </div>
+                <div class="flex gap-8 text-sm text-gray-400">
+                    <button onclick="showInfo('privacy')" class="hover:text-white transition-colors">Privacy Policy</button>
+                    <button onclick="showInfo('terms')" class="hover:text-white transition-colors">Terms of Service</button>
+                </div>
+                <div class="text-sm text-gray-500">© 2025 Insta Studio AI Factory</div>
+            </div>
+        </footer>
+    </div>
+    <!-- END: LANDING PAGE -->
+
+    <!-- START: MAIN STUDIO APP -->
+    <div id="app-page" class="hidden h-screen flex flex-col">
+        <!-- App Top Navigation -->
+        <nav class="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-black/40 backdrop-blur-xl z-50 shrink-0">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTo('landing')">
+                <div class="w-9 h-9 insta-btn rounded-xl flex items-center justify-center shadow-lg shadow-magenta-500/20">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M10 15l4-3-4-3v6z" fill="white"></path></svg>
+                </div>
+                <span class="text-xl font-extrabold tracking-tight hidden sm:inline">Insta<span class="insta-gradient-text">Studio</span><span class="ml-1 text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-gray-400">PRO</span></span>
+            </div>
+
+            <div class="flex items-center gap-4 sm:gap-8">
+                <div id="step-1" class="text-[10px] sm:text-xs font-bold uppercase tracking-widest pb-1 transition-all text-gray-600">Script</div>
+                <div id="step-2" class="text-[10px] sm:text-xs font-bold uppercase tracking-widest pb-1 text-gray-600 transition-all">Voice</div>
+                <div id="step-3" class="text-[10px] sm:text-xs font-bold uppercase tracking-widest pb-1 text-gray-600 transition-all">Visuals</div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex flex-col items-end">
+                    <span id="status-text" class="text-[10px] font-bold text-red-500 uppercase tracking-tighter">Key Required</span>
+                    <span class="text-[9px] text-gray-600">Secure Pipeline</span>
+                </div>
+                <div id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+            </div>
+        </nav>
+
+        <main class="flex-1 flex flex-col lg:flex-row overflow-hidden bg-[#050507]">
+            <!-- Left Panel: Controls -->
+            <aside class="w-full lg:w-[400px] border-r border-white/5 flex flex-col sidebar-scroll overflow-y-auto bg-[#080808]">
+                <div class="p-6 sm:p-8 space-y-10">
+                    <!-- API Section -->
+                    <section class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-[0.2em]">Engine Access</h3>
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[9px] font-bold text-magenta-400 hover:underline">Get Key</a>
+                        </div>
+                        <div class="relative group">
+                            <input type="password" id="api-key" placeholder="Enter Gemini API Key..." class="w-full glass-input rounded-xl px-4 py-3 text-sm pr-16 focus:ring-1 ring-magenta-500/50">
+                            <button id="save-key" class="absolute right-2 top-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-[10px] font-bold uppercase transition-all">Save</button>
+                        </div>
+                    </section>
+
+                    <hr class="border-white/5">
+
+                    <!-- Script Config -->
+                    <section id="section-script" class="space-y-6">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-orange-500/20 text-orange-500 text-[10px] font-bold">01</span>
+                            <h4 class="text-xs font-bold text-gray-300 uppercase tracking-widest">Scripting & Concept</h4>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold text-gray-500 uppercase">Topic / Hook Idea</label>
+                                <textarea id="reel-topic" rows="3" placeholder="e.g. 5 Morning habits for peak productivity..." class="w-full glass-input rounded-xl p-4 text-sm resize-none text-white"></textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1.5">
+                                    <label class="text-[9px] font-bold text-gray-600 uppercase ml-1">Vibe</label>
+                                    <select id="reel-style" class="w-full glass-input rounded-lg px-3 py-2 text-xs text-white">
+                                        <option value="cinematic">Cinematic</option>
+                                        <option value="minimalist">Minimalist</option>
+                                        <option value="energetic">Energetic</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[9px] font-bold text-gray-600 uppercase ml-1">Visuals</label>
+                                    <select id="visual-style" class="w-full glass-input rounded-lg px-3 py-2 text-xs text-white">
+                                        <option value="hyper-realistic photography">Photography</option>
+                                        <option value="3D render">3D Render</option>
+                                        <option value="cyberpunk art">Cyberpunk</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="generate-script-btn" class="w-full insta-btn py-4 rounded-xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-lg shadow-magenta-600/20">
+                                Generate Script
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Voice Section -->
+                    <section id="section-voice" class="space-y-6 opacity-30 pointer-events-none transition-all">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-pink-500/20 text-pink-500 text-[10px] font-bold">02</span>
+                            <h4 class="text-xs font-bold text-gray-300 uppercase tracking-widest">AI Voice</h4>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <select id="voice-name" class="w-full glass-input rounded-lg px-3 py-2 text-xs text-white">
+                                <option value="Charon">Narrator (M)</option>
+                                <option value="Kore">Bright (F)</option>
+                            </select>
+                            <select id="voice-tone" class="w-full glass-input rounded-lg px-3 py-2 text-xs text-white">
+                                <option>Professional</option>
+                                <option>Excited</option>
+                            </select>
+                        </div>
+                        <button id="generate-voice-btn" class="w-full py-4 rounded-xl font-bold bg-white/5 border border-white/5 text-[10px] uppercase text-white">
+                            Synthesize Narration
+                        </button>
+                    </section>
+
+                    <!-- Visual Section -->
+                    <section id="section-visuals" class="space-y-6 opacity-30 pointer-events-none transition-all">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-500/20 text-purple-500 text-[10px] font-bold">03</span>
+                            <h4 class="text-xs font-bold text-gray-300 uppercase tracking-widest">Visual Studio</h4>
+                        </div>
+                        <button id="generate-visuals-btn" class="w-full py-4 rounded-xl font-bold bg-white/5 border border-white/5 text-[10px] uppercase text-white">
+                            Generate Visuals
+                        </button>
+                    </section>
+                </div>
+            </aside>
+
+            <!-- Right Panel: Workspace -->
+            <section class="flex-1 bg-black overflow-y-auto sidebar-scroll flex items-center justify-center p-6 sm:p-12 relative">
+                <div id="workspace-content" class="w-full max-w-5xl h-full flex flex-col">
+                    <!-- Initial State -->
+                    <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-center space-y-6">
+                        <div class="w-24 h-24 rounded-[2rem] bg-white/5 flex items-center justify-center text-white/20 border border-white/10">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 20h9M3 20h4M12 4V2"></path><rect x="4" y="10" width="16" height="8" rx="2"></rect></svg>
+                        </div>
+                        <div class="space-y-2">
+                            <h2 class="text-2xl sm:text-3xl font-black tracking-tighter text-white uppercase italic">Studio Inactive</h2>
+                            <p class="text-gray-500 max-w-sm mx-auto text-sm">Configure your API Key and Topic to initialize the content factory.</p>
+                        </div>
+                    </div>
+
+                    <!-- Processing State -->
+                    <div id="processing-state" class="hidden flex-1 flex flex-col items-center justify-center text-center space-y-8">
+                        <div class="relative">
+                            <div class="w-32 h-32 rounded-full border-4 border-white/5 border-t-magenta-500 animate-spin-fast"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span id="progress-percent" class="text-xl font-black text-white">0%</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <h3 id="processing-title" class="text-xl font-bold uppercase text-white">Synthesizing...</h3>
+                            <p id="processing-desc" class="text-gray-500 text-sm">Engaging neural networks.</p>
+                        </div>
+                        <div id="gen-queue" class="flex gap-3 mt-4 overflow-x-auto max-w-full p-2"></div>
+                    </div>
+
+                    <!-- Result View -->
+                    <div id="result-view" class="hidden flex-1 flex flex-col md:flex-row gap-8 lg:gap-12 items-start h-full">
+                        <!-- Left: Preview Player -->
+                        <div class="w-full md:w-[340px] shrink-0 space-y-6">
+                            <div class="reel-aspect glass-card rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden relative shadow-2xl border-[6px] border-white/5 bg-black group mx-auto">
+                                <canvas id="export-canvas" width="1080" height="1920" class="hidden"></canvas>
+                                <div id="player-visual-container" class="absolute inset-0 bg-black">
+                                    <img id="player-img" src="" class="w-full h-full object-cover opacity-0">
+                                </div>
+                                <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/90 flex flex-col justify-end p-6 sm:p-8 text-center pointer-events-none">
+                                    <div id="player-caption" class="text-lg sm:text-xl font-black text-white leading-tight drop-shadow-xl mb-20 sm:mb-24 transition-all duration-300">
+                                        Ready to Preview
+                                    </div>
+                                    <div class="absolute bottom-10 left-0 w-full px-6 sm:px-8 space-y-3">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full insta-gradient p-0.5"><div class="w-full h-full rounded-full bg-black flex items-center justify-center text-[10px] text-white">AI</div></div>
+                                            <div class="text-[10px] sm:text-[11px] font-bold text-white/90 uppercase">Studio Engine</div>
+                                        </div>
+                                        <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                            <div id="player-progress" class="h-full bg-white w-0 transition-all duration-75"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="play-trigger" class="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/40 opacity-100 transition-all">
+                                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white shadow-2xl">
+                                        <svg id="play-icon" width="32" height="32" sm:width="40" sm:height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="download-btn" class="w-full insta-btn py-3.5 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-xl text-white disabled:opacity-50">
+                                <span id="download-btn-text">Export Video Project</span>
+                            </button>
+                        </div>
+
+                        <!-- Right: Storyboard Details -->
+                        <div class="flex-1 space-y-6 sm:space-y-8 overflow-y-auto pr-2 sidebar-scroll w-full">
+                            <div class="space-y-2">
+                                <h2 id="project-title" class="text-2xl sm:text-3xl font-black tracking-tight uppercase text-white">Storyboard</h2>
+                                <div class="flex flex-wrap gap-3">
+                                    <span class="text-[10px] font-bold text-magenta-400 uppercase tracking-widest px-2 py-1 rounded bg-magenta-500/10">Sync Active</span>
+                                    <span id="project-meta" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest py-1 italic">...</span>
+                                </div>
+                            </div>
+                            <div id="storyboard-list" class="space-y-4"></div>
+                            <div class="glass-card rounded-2xl p-4 sm:p-6 space-y-3">
+                                <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Metadata</h4>
+                                <p id="final-caption" class="text-sm text-gray-300"></p>
+                                <div id="hashtags" class="flex flex-wrap gap-2 pt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <!-- END: MAIN STUDIO APP -->
+
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 glass px-8 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest border border-white/10 opacity-0 translate-y-10 transition-all pointer-events-none z-[100] shadow-2xl text-white">
+        Success! 🚀
+    </div>
+
+    <script>
+        // MODAL DATA
+        const modalData = {
+            privacy: `
+                <h2 class="text-3xl font-black mb-6 insta-gradient-text uppercase tracking-tight">Privacy Policy</h2>
+                <div class="space-y-6 text-gray-400 text-sm leading-relaxed">
+                    <p>At Insta Studio, we prioritize your data security. Unlike traditional AI platforms, our architecture is strictly <span class="text-white font-bold">client-side</span>.</p>
+                    <div>
+                        <h4 class="text-white font-bold mb-2">1. API Keys</h4>
+                        <p>Your Google Gemini API keys are never stored on our servers. They reside temporarily in your browser's local memory and are transmitted directly to Google's infrastructure to process your requests.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-2">2. Media Processing</h4>
+                        <p>Generated images, scripts, and audio narration are kept within your current session. We do not maintain a database of your creations. When you refresh or close the tab, the workspace is cleared.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-2">3. Local Storage</h4>
+                        <p>We use session storage only to facilitate the content generation pipeline. No permanent cookies or tracking pixels are used for personal identification.</p>
+                    </div>
+                </div>
+            `,
+            terms: `
+                <h2 class="text-3xl font-black mb-6 insta-gradient-text uppercase tracking-tight">Terms of Service</h2>
+                <div class="space-y-6 text-gray-400 text-sm leading-relaxed">
+                    <p>By using Insta Studio, you agree to the following terms governing the use of our AI content engine.</p>
+                    <div>
+                        <h4 class="text-white font-bold mb-2">1. Acceptable Use</h4>
+                        <p>You agree not to use the engine to generate harmful, illegal, or deceptive content. Users must adhere to the safety guidelines set by Google AI Studio.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-2">2. Ownership</h4>
+                        <p>You retain full ownership of the scripts and concepts you input. Content generated by the AI engine (images and audio) is subject to the licensing terms of the respective providers (Google Imagen/TTS).</p>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-2">3. No Liability</h4>
+                        <p>Insta Studio provides the interface "as-is". We are not responsible for API downtime, cost incurred on your Google Cloud account, or the viral performance of generated content.</p>
+                    </div>
+                </div>
+            `
+        };
+
+        function showInfo(type) {
+            const modal = document.getElementById('info-modal');
+            const content = document.getElementById('modal-content');
+            content.innerHTML = modalData[type];
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('info-modal').style.display = 'none';
+            if (document.getElementById('landing-page').classList.contains('hidden')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Close modal on click outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('info-modal');
+            if (event.target == modal) closeModal();
+        }
+
+        // NAVIGATION ENGINE
+        function navigateTo(page) {
+            const landing = document.getElementById('landing-page');
+            const app = document.getElementById('app-page');
+            
+            if (page === 'app') {
+                landing.classList.add('hidden');
+                app.classList.remove('hidden');
+                document.body.classList.remove('overflow-y-auto');
+                document.body.classList.add('overflow-hidden');
+            } else {
+                app.classList.add('hidden');
+                landing.classList.remove('hidden');
+                document.body.classList.remove('overflow-hidden');
+                document.body.classList.add('overflow-y-auto');
+            }
+            window.scrollTo(0, 0);
+        }
+
+        // REVEAL ON SCROLL
+        const reveals = document.querySelectorAll('.reveal');
+        const revealOnScroll = () => {
+            const triggerBottom = window.innerHeight * 0.9;
+            reveals.forEach(reveal => {
+                const revealTop = reveal.getBoundingClientRect().top;
+                if (revealTop < triggerBottom) reveal.classList.add('active');
+            });
+        };
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll();
+
+        // APP LOGIC
+        let appState = {
+            apiKey: "",
+            script: null,
+            audioUrl: null,
+            audioBlob: null,
+            visuals: [],
+            visualImages: [],
+            isPlaying: false,
+            isRecording: false,
+            currentSceneIndex: -1,
+            animationFrameId: null,
+            sceneTimings: [] 
+        };
+
+        const elements = {
+            apiKey: document.getElementById('api-key'),
+            saveKey: document.getElementById('save-key'),
+            statusIndicator: document.getElementById('status-indicator'),
+            topic: document.getElementById('reel-topic'),
+            visualStyle: document.getElementById('visual-style'),
+            genScriptBtn: document.getElementById('generate-script-btn'),
+            genVoiceBtn: document.getElementById('generate-voice-btn'),
+            genVisualsBtn: document.getElementById('generate-visuals-btn'),
+            sectionVoice: document.getElementById('section-voice'),
+            sectionVisuals: document.getElementById('section-visuals'),
+            emptyState: document.getElementById('empty-state'),
+            processingState: document.getElementById('processing-state'),
+            resultView: document.getElementById('result-view'),
+            progressPercent: document.getElementById('progress-percent'),
+            genQueue: document.getElementById('gen-queue'),
+            storyboardList: document.getElementById('storyboard-list'),
+            playerImg: document.getElementById('player-img'),
+            playerCaption: document.getElementById('player-caption'),
+            playerProgress: document.getElementById('player-progress'),
+            playTrigger: document.getElementById('play-trigger'),
+            playIcon: document.getElementById('play-icon'),
+            toast: document.getElementById('toast'),
+            step1: document.getElementById('step-1'),
+            step2: document.getElementById('step-2'),
+            step3: document.getElementById('step-3'),
+            downloadBtn: document.getElementById('download-btn'),
+            downloadBtnText: document.getElementById('download-btn-text'),
+            exportCanvas: document.getElementById('export-canvas')
+        };
+
+        function showToast(msg) {
+            elements.toast.innerText = msg;
+            elements.toast.style.opacity = '1';
+            elements.toast.style.transform = 'translate(-50%, -20px)';
+            setTimeout(() => { elements.toast.style.opacity = '0'; elements.toast.style.transform = 'translate(-50%, 10px)'; }, 3000);
+        }
+
+        async function apiRequest(endpoint, payload, model = 'gemini-2.5-flash-preview-09-2025') {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:${endpoint}?key=${appState.apiKey}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('API Request Failed');
+            return res.json();
+        }
+
+        elements.saveKey.addEventListener('click', () => {
+            const val = elements.apiKey.value.trim();
+            if (val) {
+                appState.apiKey = val;
+                elements.statusIndicator.classList.remove('bg-red-500');
+                elements.statusIndicator.classList.add('bg-green-500');
+                showToast("Pipeline Authorized ⚡");
+            }
+        });
+
+        elements.genScriptBtn.addEventListener('click', async () => {
+            if (!appState.apiKey) return showToast("API Key Required");
+            const topic = elements.topic.value.trim();
+            if (!topic) return showToast("Enter a topic");
+
+            elements.emptyState.classList.add('hidden');
+            elements.resultView.classList.add('hidden');
+            elements.processingState.classList.remove('hidden');
+            
+            const prompt = `Generate a viral Instagram Reel storyboard JSON for topic: "${topic}". Scenes must have "narration" and "visual_prompt". Also return "title", "caption", "hashtags". JSON ONLY.`;
+            
+            try {
+                const data = await apiRequest('generateContent', {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                });
+                appState.script = JSON.parse(data.candidates[0].content.parts[0].text);
+                
+                elements.storyboardList.innerHTML = appState.script.scenes.map((s, idx) => `
+                    <div id="scene-card-${idx}" class="glass-card rounded-xl p-4 border-l-4 border-transparent transition-all">
+                        <span class="text-[9px] font-bold text-gray-500">SCENE ${idx+1}</span>
+                        <p class="text-xs text-white font-medium mt-1">"${s.narration}"</p>
+                    </div>
+                `).join('');
+                
+                elements.sectionVoice.style.opacity = "1";
+                elements.sectionVoice.style.pointerEvents = "auto";
+                elements.step1.classList.add('step-active');
+                elements.processingState.classList.add('hidden');
+                elements.resultView.classList.remove('hidden');
+                showToast("Storyboard Generated 📝");
+            } catch (err) { showToast("Synthesis Error"); }
+        });
+
+        elements.genVoiceBtn.addEventListener('click', async () => {
+            if (!appState.script) return;
+            elements.genVoiceBtn.innerText = "Synthesizing...";
+            const fullText = appState.script.scenes.map(s => s.narration).join('. ');
+            
+            try {
+                const data = await apiRequest('generateContent', {
+                    contents: [{ parts: [{ text: `Narrate: ${fullText}` }] }],
+                    generationConfig: { 
+                        responseModalities: ["AUDIO"], 
+                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: document.getElementById('voice-name').value } } } 
+                    }
+                }, 'gemini-2.5-flash-preview-tts');
+
+                const inlineData = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData;
+                const binary = atob(inlineData.data);
+                const array = new Uint8Array(binary.length);
+                for(let i=0; i<binary.length; i++) array[i] = binary.charCodeAt(i);
+                appState.audioBlob = createWavBlob(array, 24000);
+                appState.audioUrl = URL.createObjectURL(appState.audioBlob);
+                
+                const tempAudio = new Audio(appState.audioUrl);
+                tempAudio.onloadedmetadata = () => {
+                    let elapsed = 0;
+                    const totalChars = appState.script.scenes.reduce((acc, s) => acc + s.narration.length, 0);
+                    appState.sceneTimings = appState.script.scenes.map(s => {
+                        const duration = (s.narration.length / totalChars) * tempAudio.duration;
+                        const timing = { start: elapsed, end: elapsed + duration };
+                        elapsed += duration;
+                        return timing;
+                    });
+                    elements.sectionVisuals.style.opacity = "1";
+                    elements.sectionVisuals.style.pointerEvents = "auto";
+                    elements.step2.classList.add('step-active');
+                    showToast("Narration Ready 🎙️");
+                };
+            } catch (e) { showToast("Voice Failed"); }
+            finally { elements.genVoiceBtn.innerText = "Synthesize Narration"; }
+        });
+
+        elements.genVisualsBtn.addEventListener('click', async () => {
+            elements.resultView.classList.add('hidden');
+            elements.processingState.classList.remove('hidden');
+            appState.visuals = []; appState.visualImages = [];
+            
+            const scenes = appState.script.scenes;
+            for (let i = 0; i < scenes.length; i++) {
+                elements.progressPercent.innerText = `${Math.round(((i+1)/scenes.length)*100)}%`;
+                const prompt = `9:16 vertical, style: ${document.getElementById('visual-style').value}, subject: ${scenes[i].visual_prompt}`;
+                try {
+                    const data = await apiRequest('predict', { instances: { prompt } }, 'imagen-4.0-generate-001');
+                    const base64 = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+                    appState.visuals.push(base64);
+                    const img = new Image(); img.src = base64; appState.visualImages.push(img);
+                } catch (e) { appState.visuals.push(""); }
+            }
+            elements.step3.classList.add('step-active');
+            elements.processingState.classList.add('hidden');
+            elements.resultView.classList.remove('hidden');
+            elements.playerImg.src = appState.visuals[0];
+            elements.playerImg.style.opacity = "1";
+            elements.downloadBtn.disabled = false;
+        });
+
+        function createWavBlob(pcmData, sampleRate) {
+            const header = new ArrayBuffer(44);
+            const view = new DataView(header);
+            const writeString = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o+i, s.charCodeAt(i)); };
+            writeString(0, 'RIFF'); view.setUint32(4, 36 + pcmData.length, true);
+            writeString(8, 'WAVE'); writeString(12, 'fmt ');
+            view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+            writeString(36, 'data'); view.setUint32(40, pcmData.length, true);
+            return new Blob([header, pcmData], { type: 'audio/wav' });
+        }
+
+        let audioPlayer = new Audio();
+        function renderLoop() {
+            if (!appState.isPlaying && !appState.isRecording) return;
+            const time = audioPlayer.currentTime;
+            elements.playerProgress.style.width = `${(time / audioPlayer.duration) * 100}%`;
+            
+            let idx = appState.sceneTimings.findIndex(t => time >= t.start && time < t.end);
+            if (idx === -1 && time > 0) idx = appState.sceneTimings.length - 1;
+
+            if (idx !== -1 && appState.currentSceneIndex !== idx) {
+                appState.currentSceneIndex = idx;
+                elements.playerImg.src = appState.visuals[idx];
+                elements.playerImg.classList.remove('ken-burns');
+                void elements.playerImg.offsetWidth; 
+                elements.playerImg.classList.add('ken-burns');
+                elements.playerCaption.innerText = appState.script.scenes[idx].narration;
+            }
+
+            if (appState.isRecording) {
+                const ctx = elements.exportCanvas.getContext('2d');
+                const img = appState.visualImages[idx >= 0 ? idx : 0];
+                if (img) {
+                    ctx.drawImage(img, 0, 0, 1080, 1920);
+                    
+                    // Overlay Watermark
+                    ctx.fillStyle = "rgba(0,0,0,0.3)";
+                    ctx.fillRect(700, 50, 330, 80);
+                    ctx.fillStyle = "white";
+                    ctx.font = "bold 40px 'Plus Jakarta Sans'";
+                    ctx.fillText("INSTA STUDIO", 730, 105);
+                }
+            }
+            appState.animationFrameId = requestAnimationFrame(renderLoop);
+        }
+
+        elements.downloadBtn.addEventListener('click', () => {
+            appState.isRecording = true;
+            elements.downloadBtnText.innerText = "Exporting Reel...";
+            const canvasStream = elements.exportCanvas.captureStream(30);
+            const recorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' });
+            const chunks = [];
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
+                a.download = `InstaStudio_AI_Reel.webm`; a.click();
+                appState.isRecording = false;
+                elements.downloadBtnText.innerText = "Export Video Project";
+            };
+            audioPlayer.currentTime = 0; audioPlayer.play(); recorder.start(); renderLoop();
+            audioPlayer.onended = () => recorder.stop();
+        });
+
+        elements.playTrigger.addEventListener('click', () => {
+            if (appState.isPlaying) { audioPlayer.pause(); appState.isPlaying = false; }
+            else {
+                audioPlayer.src = appState.audioUrl;
+                audioPlayer.play(); appState.isPlaying = true; renderLoop();
+            }
+        });
+    </script>
+</body>
+</html>

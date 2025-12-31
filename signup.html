@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter the Studio | InstaStudio AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --google-blue: #4285F4;
+            --insta-purple: #833ab4;
+            --insta-pink: #fd1d1d;
+            --insta-orange: #fcb045;
+            --insta-magenta: #e1306c;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #050507;
+            color: #ffffff;
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Animated Instagram Mesh Gradient Background */
+        .mesh-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: #050507;
+        }
+
+        .gradient-sphere {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: move 20s infinite alternate;
+        }
+
+        @keyframes move {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(20vw, 20vh) scale(1.2); }
+        }
+
+        .noise::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://grainy-gradients.vercel.app/noise.svg');
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .google-gradient-text {
+            background: linear-gradient(45deg, var(--google-blue), #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .google-auth-btn {
+            background: rgba(255, 255, 255, 1);
+            color: #1f2937;
+            border: 1px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .google-auth-btn:hover {
+            background: #f9fafb;
+            transform: scale(1.01);
+            box-shadow: 0 10px 40px -10px rgba(66, 133, 244, 0.2);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .floating-1 { animation: float 6s ease-in-out infinite; }
+        .floating-2 { animation: float 8s ease-in-out infinite 1.5s; }
+
+        #error-message {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body class="noise p-4 md:p-8 lg:p-12">
+    <!-- Animated Background -->
+    <div class="mesh-gradient">
+        <div class="gradient-sphere w-[300px] h-[300px] md:w-[500px] md:h-[500px] top-[-10%] left-[-10%]" style="background: var(--insta-purple);"></div>
+        <div class="gradient-sphere w-[250px] h-[250px] md:w-[400px] md:h-[400px] bottom-[10%] right-[0%]" style="background: var(--insta-orange); animation-delay: -5s;"></div>
+        <div class="gradient-sphere w-[350px] h-[350px] md:w-[600px] md:h-[600px] top-[20%] right-[10%]" style="background: var(--insta-magenta); animation-delay: -10s;"></div>
+        <div class="gradient-sphere w-[200px] h-[200px] md:w-[300px] md:h-[300px] bottom-[-5%] left-[20%]" style="background: var(--insta-pink); animation-delay: -15s;"></div>
+    </div>
+
+    <!-- Main Responsive Container -->
+    <div class="w-full max-w-5xl glass rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl relative flex flex-col md:flex-row min-h-[500px] md:min-h-[600px]">
+        
+        <!-- Left Section (Collage) - Hidden on Mobile -->
+        <div class="hidden md:flex flex-col justify-center p-6 lg:p-10 bg-black/40 border-r border-white/5 md:w-[45%] relative overflow-hidden">
+            <div class="relative w-full h-64 md:h-full flex items-center justify-center">
+                <!-- Reels Card -->
+                <div class="absolute z-20 w-36 h-60 lg:w-44 lg:h-72 glass-card rounded-[1.5rem] md:rounded-[2rem] p-1 shadow-2xl floating-1 transform -rotate-3 -translate-x-8 md:-translate-x-12 translate-y-4">
+                    <div class="w-full h-full rounded-[1.3rem] md:rounded-[1.8rem] overflow-hidden relative bg-gray-900">
+                        <img src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover opacity-80" alt="Reels Preview">
+                        <div class="absolute bottom-4 left-4 right-4 space-y-1.5">
+                            <div class="h-1 w-2/3 bg-white/40 rounded-full"></div>
+                            <div class="h-1 w-1/2 bg-white/20 rounded-full"></div>
+                        </div>
+                        <div class="absolute top-4 left-4 p-1.5 bg-black/40 backdrop-blur-md rounded-lg">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M10 15l5-3-5-3v6z"/><path d="M17 2H7c-2.76 0-5 2.24-5 5v10c0 2.76 2.24 5 5 5h10c2.76 0 5-2.24 5-5V7c0-2.76-2.24-5-5-5zm3 15c0 1.65-1.35 3-3 3H7c-1.65 0-3-1.35-3-3V7c0-1.65 1.35-3 3-3h10c1.65 0 3 1.35 3 3v10z"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instagram Logo Card -->
+                <div class="absolute z-30 w-32 h-32 lg:w-40 lg:h-40 glass rounded-2xl md:rounded-3xl p-3 md:p-4 shadow-2xl floating-2 transform rotate-6 translate-x-12 md:translate-x-16 -translate-y-16 md:-translate-y-20 flex items-center justify-center border border-white/20">
+                    <div class="w-full h-full rounded-xl md:rounded-2xl bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] flex items-center justify-center shadow-xl">
+                        <svg width="40" height="40" md:width="60" md:height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative z-50 mt-auto pt-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 md:w-10 md:h-10 bg-white rounded-lg md:rounded-xl flex items-center justify-center shadow-xl">
+                        <svg width="18" height="18" md:width="24" md:height="24" viewBox="0 0 24 24" fill="none" stroke="#050507" stroke-width="2.5">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-black leading-tight uppercase tracking-tighter">
+                            InstaStudio<span class="google-gradient-text"> AI</span>
+                        </h1>
+                        <p class="text-gray-400 text-[8px] md:text-[9px] font-bold uppercase tracking-[0.3em] opacity-60">Social Intelligence Engine</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Section: Real Google Auth -->
+        <div id="auth-section" class="flex-1 p-8 sm:p-12 lg:p-16 flex flex-col justify-center bg-white/[0.01] relative overflow-hidden">
+            <!-- Mobile Logo -->
+            <div class="md:hidden flex items-center gap-3 mb-8">
+                <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#050507" stroke-width="2.5">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h1 class="text-xl font-black leading-tight uppercase tracking-tighter">
+                    InstaStudio<span class="google-gradient-text"> AI</span>
+                </h1>
+            </div>
+
+            <header class="mb-8 md:mb-10 relative">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[9px] md:text-[10px] font-extrabold text-blue-400 uppercase tracking-widest mb-4 md:mb-6">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
+                    Studio Online
+                </div>
+                <h2 class="text-3xl lg:text-4xl font-black text-white mb-3 tracking-tight">Access Your Studio</h2>
+                <p class="text-gray-400 text-xs md:text-sm leading-relaxed max-w-xs">Securely sign in with Google to manage your Reels, scripts, and AI assets.</p>
+            </header>
+
+            <div id="loading-state" class="hidden flex flex-col items-center py-10 space-y-4">
+                <div class="w-10 h-10 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                <p id="loading-text" class="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Connecting to Google...</p>
+            </div>
+
+            <div id="error-message" class="mb-6 p-4 rounded-xl text-xs font-bold uppercase tracking-tight"></div>
+
+            <div id="login-form-container">
+                <div class="space-y-3 md:space-y-4 mb-8 md:mb-10">
+                    <div class="flex items-start gap-4 text-xs md:text-sm text-gray-300">
+                        <div class="mt-1 w-5 h-5 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--google-blue)" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+                        </div>
+                        <p>Sync projects across your devices instantly.</p>
+                    </div>
+                    <div class="flex items-start gap-4 text-xs md:text-sm text-gray-300">
+                        <div class="mt-1 w-5 h-5 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--google-blue)" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+                        </div>
+                        <p>Access high-fidelity <strong>Gemini 2.5</strong> models.</p>
+                    </div>
+                </div>
+
+                <button id="google-login-btn" class="w-full flex items-center justify-center gap-4 py-3.5 md:py-4 px-6 md:px-8 rounded-xl md:rounded-2xl transition-all text-xs md:text-sm font-bold group shadow-xl active:scale-[0.98] google-auth-btn">
+                    <svg width="18" height="18" md:width="20" md:height="20" viewBox="0 0 24 24">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    <span>Continue with Google</span>
+                </button>
+            </div>
+
+            <div class="mt-auto pt-6 border-t border-white/5">
+                <p class="text-[9px] md:text-[10px] text-gray-600 text-center md:text-left font-bold uppercase tracking-widest">
+                    Secure Session • Encrypted Protocol v2.5
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE MODULE -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            GoogleAuthProvider, 
+            signInWithPopup, 
+            setPersistence, 
+            browserLocalPersistence 
+        } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBRbSlThyd2JjRLJZSGEnKITYFUojosQbM",
+            authDomain: "instastudioai.firebaseapp.com",
+            projectId: "instastudioai",
+            storageBucket: "instastudioai.firebasestorage.app",
+            messagingSenderId: "653516215192",
+            appId: "1:653516215192:web:7417ab0843da4d3dcb91ed",
+            measurementId: "G-GGPV57VQKR"
+        };
+
+        // Initialize
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        const loginBtn = document.getElementById('google-login-btn');
+        const loginContainer = document.getElementById('login-form-container');
+        const loadingState = document.getElementById('loading-state');
+        const loadingText = document.getElementById('loading-text');
+        const errorDiv = document.getElementById('error-message');
+
+        // Set Persistence First
+        const init = async () => {
+            try {
+                await setPersistence(auth, browserLocalPersistence);
+            } catch (e) {
+                console.error("Persistence failed", e);
+            }
+        };
+        init();
+
+        // Listen for Real Success
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("Verified User:", user.email);
+                
+                // FIXED: Using defined loginContainer variable
+                loginContainer.classList.add('hidden');
+                loadingState.classList.remove('hidden');
+                loadingState.classList.add('flex');
+                loadingText.innerHTML = "AUTHORIZED • REDIRECTING...";
+                loadingText.classList.add('text-blue-400');
+
+                setTimeout(() => {
+                    window.location.href = "main-page.html";
+                }, 800);
+            }
+        });
+
+        // Real Google Sign-In Action
+        loginBtn.addEventListener('click', async () => {
+            errorDiv.style.display = 'none';
+            loginContainer.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            loadingState.classList.add('flex');
+
+            try {
+                // REAL GOOGLE POPUP
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Auth Error:", error);
+                
+                let msg = "Authentication failed. Please try again.";
+                if (error.code === 'auth/popup-closed-by-user') msg = "Login window closed.";
+                if (error.code === 'auth/unauthorized-domain') msg = "Domain not authorized in Firebase Console.";
+
+                errorDiv.innerText = msg;
+                errorDiv.style.display = 'block';
+                loginContainer.classList.remove('hidden');
+                loadingState.classList.add('hidden');
+                loadingState.classList.remove('flex');
+            }
+        });
+    </script>
+</body>
+</html>
